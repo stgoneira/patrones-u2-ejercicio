@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -15,6 +17,7 @@ import cl.patrones.sysdonaciones.core.entities.Contribuyente;
 import cl.patrones.sysdonaciones.core.entities.Contribuyente.TipoContribuyente;
 import cl.patrones.sysdonaciones.core.entities.Donacion;
 import cl.patrones.sysdonaciones.core.exceptions.SocioInexistenteException;
+import cl.patrones.sysdonaciones.core.observers.DonacionObserver;
 import cl.patrones.sysdonaciones.core.repositories.CausaRepository;
 import cl.patrones.sysdonaciones.core.repositories.ContribuyenteRepository;
 import cl.patrones.sysdonaciones.core.repositories.DonacionRepository;
@@ -25,6 +28,7 @@ public class DonacionServiceImpl implements DonacionService {
 	private ContribuyenteRepository contribuyenteRepository;
 	private DonacionRepository donacionRepository;
 	private CausaRepository causaRepository;
+	private List<DonacionObserver> observadores = new ArrayList<>();
 
 	public DonacionServiceImpl(
 			DonacionRepository donacionRepository,
@@ -34,6 +38,11 @@ public class DonacionServiceImpl implements DonacionService {
 		this.donacionRepository = donacionRepository;
 		this.causaRepository = causaRepository;
 		this.contribuyenteRepository = contribuyenteRepository;
+	}
+	
+	@Override
+	public void registrarObservador(DonacionObserver observador) {
+		this.observadores.add(observador);
 	}
 	
 	/**
@@ -72,21 +81,22 @@ public class DonacionServiceImpl implements DonacionService {
 	
 	public UUID registrarDonacionAnonima(File comprobante, Long monto) {		
 		Optional<Causa> causa = causaRepository.findByNombre("Donaciones Anónimas");
-		var donacion = new Donacion.Builder()
-				.monto(monto)
-				.causa(causa.get())
-				.comprobante( comprobante.getAbsolutePath() )
-				.build()
-		;
-		//var donacion = new Donacion(monto, null, causa.get(), comprobante.toURI().toString());
+		var donacion = new Donacion(monto, null, causa.get(), comprobante.toURI().toString());
 		donacion = donacionRepository.save(donacion);
 		
 		var finalFile = moveFile(comprobante, donacion.getId());
 		donacion.setComprobante( finalFile.getAbsolutePath() );
-		donacionRepository.save(donacion);		
+		donacionRepository.save(donacion);
+		notificarObservadores(donacion);
 		return donacion.getId();
 	}
 	
+	private void notificarObservadores(Donacion donacion) {
+		for(var observador : observadores) {
+			observador.donacionRegistrada(donacion);
+		}
+	}
+
 	public UUID registrarMensualidadSocio(File comprobante, Long monto, String rut) throws SocioInexistenteException {
 		Optional<Causa> causa = causaRepository.findByNombre("Mensualidades Socios");
 		var optContribuyente = contribuyenteRepository.findByRut(rut);
@@ -97,18 +107,12 @@ public class DonacionServiceImpl implements DonacionService {
 		} else {
 			contribuyente = optContribuyente.get();
 		}
-		var donacion = new Donacion.Builder()
-				.monto(monto)
-				.contribuyente(contribuyente)
-				.causa(causa.get())
-				.comprobante(comprobante.getAbsolutePath())
-				.build()
-		;
-		//var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
+		var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
 		donacionRepository.save(donacion);
 		var finalFile = moveFile(comprobante, donacion.getId());
 		donacion.setComprobante(finalFile.getAbsolutePath());
-		donacionRepository.save(donacion);		
+		donacionRepository.save(donacion);
+		notificarObservadores(donacion);
 		return donacion.getId();
 	}
 	
@@ -116,32 +120,18 @@ public class DonacionServiceImpl implements DonacionService {
 		var optContribuyente = contribuyenteRepository.findByRut(rut);
 		Contribuyente contribuyente;
 		if(optContribuyente.isEmpty()) {
-			contribuyente = new Contribuyente.Builder()
-					.rut(rut)
-					.nombre(nombre)
-					.email(email)
-					.telefono(telefono)
-					.tipo(TipoContribuyente.NORMAL)
-					.build()
-			;
-			//contribuyente = new Contribuyente(rut, nombre, email, telefono, TipoContribuyente.NORMAL);			
+			contribuyente = new Contribuyente(rut, nombre, email, telefono, TipoContribuyente.NORMAL);
 			contribuyente = contribuyenteRepository.save(contribuyente);
 		} else {
 			contribuyente = optContribuyente.get();	
 		}		
 		var causa = causaRepository.findByNombre("Donaciones Generales");
-		var donacion = new Donacion.Builder()
-				.monto(monto)
-				.contribuyente(contribuyente)
-				.causa(causa.get())
-				.comprobante(comprobante.getAbsolutePath())
-				.build()
-		;
-		//var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
+		var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
 		donacion = donacionRepository.save(donacion);
 		var finalFile = moveFile(comprobante, donacion.getId());
 		donacion.setComprobante(finalFile.getAbsolutePath());
-		donacionRepository.save(donacion);		
+		donacionRepository.save(donacion);
+		notificarObservadores(donacion);
 		return donacion.getId();
 	}
 	

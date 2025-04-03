@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import cl.patrones.sysdonaciones.core.entities.Contribuyente;
 import cl.patrones.sysdonaciones.core.services.DonacionService;
-import cl.patrones.sysdonaciones.notificaciones.NotificacionService;
 import cl.patrones.sysdonaciones.recibos.ReciboService;
 import cl.patrones.sysdonaciones.reportes.ReporteService;
 import cl.patrones.sysdonaciones.web.forms.DonacionAnonimaForm;
@@ -29,20 +28,17 @@ import cl.patrones.sysdonaciones.web.forms.MensualidadSocioForm;
 public class AppWebController {
 	
 	private DonacionService donacionService;
-	private ReciboService reciboService;
-	private NotificacionService notificacionService;
+	private ReciboService reciboService;	
 	private ReporteService reporteService;
 		
 	public AppWebController(
 			DonacionService donacionService, 
-			ReciboService reciboService, 
-			NotificacionService notificacionService,
+			ReciboService reciboService,
 			ReporteService reporteService
 	) {
 		super();
 		this.donacionService 	= donacionService;
-		this.reciboService	 	= reciboService;
-		this.notificacionService = notificacionService;
+		this.reciboService	 	= reciboService;		
 		this.reporteService 	= reporteService;
 	}
 	
@@ -112,8 +108,7 @@ public class AppWebController {
 		try {
 			form.setComprobante(comprobante);
 			var uuid = donacionService.registrarMensualidadSocio(form.getComprobanteAsFile(), form.getMonto(), form.getRut());					
-			var transaccionId = uuid.toString();
-			notificacionService.notificar(transaccionId);
+			var transaccionId = uuid.toString();			
 			var reciboUrl = "/recibo/"+transaccionId;
 			model.addAttribute("reciboUrl", reciboUrl);
 			return "/donacion/exito";	
@@ -138,8 +133,7 @@ public class AppWebController {
 		try {
 			form.setComprobante(comprobante);
 			var uuid = donacionService.registrarDonacionGeneral(form.getComprobanteAsFile(), form.getMonto(), form.getRut(), form.getNombre(), form.getEmail(), form.getTelefono());				
-			var transaccionId = uuid.toString();
-			notificacionService.notificar(transaccionId);
+			var transaccionId = uuid.toString();			
 			var reciboUrl = "/recibo/"+transaccionId;
 			model.addAttribute("reciboUrl", reciboUrl);
 			return "/donacion/exito";	
@@ -167,7 +161,7 @@ public class AppWebController {
 			var transaccionId = uuid.toString();
 			var reciboUrl = "/recibo/"+transaccionId;
 			model.addAttribute("reciboUrl", reciboUrl);
-			return "/donacion/exito";	
+			return "/donacion/exito";
 		} catch (Exception e) {
 			var mensajeErr = e.getMessage();
 			model.addAttribute("error", "Error:"+ mensajeErr);			

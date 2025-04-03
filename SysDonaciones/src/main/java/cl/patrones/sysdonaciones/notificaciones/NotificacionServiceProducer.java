@@ -5,15 +5,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import cl.patrones.sysdonaciones.core.services.ConfiguracionService;
+import cl.patrones.sysdonaciones.core.services.DonacionService;
 
 @Configuration
 public class NotificacionServiceProducer {
 
-	private ConfiguracionService configuracionService;	
+	private ConfiguracionService configuracionService;
+	private DonacionService donacionService;
 	
-    public NotificacionServiceProducer(ConfiguracionService configuracionService) {
+    public NotificacionServiceProducer(ConfiguracionService configuracionService, DonacionService donacionService) {
 		super();
 		this.configuracionService = configuracionService;
+		this.donacionService = donacionService;
 	}
 
 	@Bean
@@ -42,6 +45,9 @@ public class NotificacionServiceProducer {
 		if( notificacionService == null) {
 			notificacionService = new EmailNotificacionService(notificacionService);
 		}
+		
+		// agregar como observador
+		donacionService.registrarObservador(notificacionService);
 		
 		return notificacionService; 
 	}

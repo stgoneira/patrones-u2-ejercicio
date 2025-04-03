@@ -6,8 +6,11 @@ import java.util.UUID;
 
 import cl.patrones.sysdonaciones.core.entities.Donacion;
 import cl.patrones.sysdonaciones.core.exceptions.SocioInexistenteException;
+import cl.patrones.sysdonaciones.core.observers.DonacionObserver;
 
 public interface DonacionService {
+	
+	public void registrarObservador(DonacionObserver observador); 
 	
 	public Optional<Donacion> obtenerDonacion(String transaccionId);
 	
