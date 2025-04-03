@@ -72,7 +72,13 @@ public class DonacionServiceImpl implements DonacionService {
 	
 	public UUID registrarDonacionAnonima(File comprobante, Long monto) {		
 		Optional<Causa> causa = causaRepository.findByNombre("Donaciones Anónimas");
-		var donacion = new Donacion(monto, null, causa.get(), comprobante.toURI().toString());
+		var donacion = new Donacion.Builder()
+				.monto(monto)
+				.causa(causa.get())
+				.comprobante( comprobante.getAbsolutePath() )
+				.build()
+		;
+		//var donacion = new Donacion(monto, null, causa.get(), comprobante.toURI().toString());
 		donacion = donacionRepository.save(donacion);
 		
 		var finalFile = moveFile(comprobante, donacion.getId());
@@ -91,7 +97,14 @@ public class DonacionServiceImpl implements DonacionService {
 		} else {
 			contribuyente = optContribuyente.get();
 		}
-		var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
+		var donacion = new Donacion.Builder()
+				.monto(monto)
+				.contribuyente(contribuyente)
+				.causa(causa.get())
+				.comprobante(comprobante.getAbsolutePath())
+				.build()
+		;
+		//var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
 		donacionRepository.save(donacion);
 		var finalFile = moveFile(comprobante, donacion.getId());
 		donacion.setComprobante(finalFile.getAbsolutePath());
@@ -103,13 +116,28 @@ public class DonacionServiceImpl implements DonacionService {
 		var optContribuyente = contribuyenteRepository.findByRut(rut);
 		Contribuyente contribuyente;
 		if(optContribuyente.isEmpty()) {
-			contribuyente = new Contribuyente(rut, nombre, email, telefono, TipoContribuyente.NORMAL);
+			contribuyente = new Contribuyente.Builder()
+					.rut(rut)
+					.nombre(nombre)
+					.email(email)
+					.telefono(telefono)
+					.tipo(TipoContribuyente.NORMAL)
+					.build()
+			;
+			//contribuyente = new Contribuyente(rut, nombre, email, telefono, TipoContribuyente.NORMAL);			
 			contribuyente = contribuyenteRepository.save(contribuyente);
 		} else {
 			contribuyente = optContribuyente.get();	
 		}		
 		var causa = causaRepository.findByNombre("Donaciones Generales");
-		var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
+		var donacion = new Donacion.Builder()
+				.monto(monto)
+				.contribuyente(contribuyente)
+				.causa(causa.get())
+				.comprobante(comprobante.getAbsolutePath())
+				.build()
+		;
+		//var donacion = new Donacion(monto, contribuyente, causa.get(), comprobante.getAbsolutePath());
 		donacion = donacionRepository.save(donacion);
 		var finalFile = moveFile(comprobante, donacion.getId());
 		donacion.setComprobante(finalFile.getAbsolutePath());

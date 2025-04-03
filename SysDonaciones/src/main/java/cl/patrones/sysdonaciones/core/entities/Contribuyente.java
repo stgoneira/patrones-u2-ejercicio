@@ -40,6 +40,40 @@ public class Contribuyente {
 		this.tipo = tipo;
 	}
 	
+	public static class Builder {			
+		String rut;
+		String nombre;
+		String email;
+		String telefono;		
+		TipoContribuyente tipo;
+		
+		public Builder() {}
+		
+		public Builder rut(String rut) {
+			this.rut = rut;
+			return this;
+		}
+		public Builder nombre(String nombre) {
+			this.nombre = nombre;
+			return this;
+		}
+		public Builder email(String email) {
+			this.email = email;
+			return this;
+		}
+		public Builder telefono(String telefono) {
+			this.telefono = telefono;
+			return this;
+		}
+		public Builder tipo(TipoContribuyente tipo) {
+			this.tipo = tipo;
+			return this;
+		}
+		public Contribuyente build() {
+			return new Contribuyente(rut, nombre, email, telefono, tipo);
+		}
+	}
+	
 	public String getRut() {
 		return rut;
 	}

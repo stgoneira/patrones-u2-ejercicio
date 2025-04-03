@@ -35,6 +35,40 @@ public class Donacion {
 		this.comprobante = comprobante;
 	}
 	
+	public static class Builder {
+		
+		private Long monto;		
+		private Contribuyente contribuyente;		
+		private Causa causa;
+		private String comprobante;
+		
+		public Builder() {}
+		
+		public Builder monto(Long monto) {
+			this.monto = monto;
+			return this;
+		}
+		
+		public Builder contribuyente(Contribuyente contribuyente) {
+			this.contribuyente = contribuyente;
+			return this;
+		}
+		
+		public Builder causa(Causa causa) {
+			this.causa = causa;
+			return this;
+		}
+		
+		public Builder comprobante(String comprobante) {
+			this.comprobante = comprobante;
+			return this;
+		}
+		
+		public Donacion build() {
+			return new Donacion(monto, contribuyente, causa, comprobante);
+		}
+	}
+	
 	public UUID getId() {
 		return id;
 	}
