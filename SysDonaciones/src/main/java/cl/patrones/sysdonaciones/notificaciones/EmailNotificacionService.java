@@ -1,12 +1,14 @@
 package cl.patrones.sysdonaciones.notificaciones;
 
-import org.springframework.stereotype.Service;
+public class EmailNotificacionService extends NotificacionServiceBase {
 
-@Service
-public class EmailNotificacionService implements NotificacionService {
+	public EmailNotificacionService(NotificacionService decorado) {
+		super(decorado);
+	}
 
 	@Override
-	public void notificar(String transaccionId) {		
+	public void notificar(String transaccionId) {
+		super.notificar(transaccionId);
 		System.out.println("Enviando email....");
 	}
 	
