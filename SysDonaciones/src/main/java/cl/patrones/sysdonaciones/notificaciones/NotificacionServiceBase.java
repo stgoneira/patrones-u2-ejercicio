@@ -1,5 +1,6 @@
 package cl.patrones.sysdonaciones.notificaciones;
 
+import cl.patrones.sysdonaciones.core.entities.Donacion;
 
 abstract public class NotificacionServiceBase implements NotificacionService {
 
@@ -15,5 +16,9 @@ abstract public class NotificacionServiceBase implements NotificacionService {
 		if( decorado != null)
 			decorado.notificar(transaccionId);		
 	}
-	
+
+	@Override
+	public void donacionRegistrada(Donacion donacion) {
+		notificar(donacion.getId().toString());		
+	}
 }
